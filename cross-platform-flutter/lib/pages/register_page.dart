@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../services/auth_service.dart';
+
 import '../constants/app_colors.dart';
 import '../widgets/mello_logo.dart';
 import '../widgets/mello_button.dart';
@@ -28,6 +30,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
+  bool _isLoading = false;
+  final AuthService _authService = AuthService();
 
   @override
   void dispose() {
@@ -75,16 +79,44 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  // Validation du formulaire
-  void _register() {
-    if (_formKey.currentState!.validate()) {
+  // Envoi des informations au backend
+  Future<void> _register() async {
+    if (_isLoading || !_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _authService.register(
+        nom: _nomController.text,
+        prenom: _prenomController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        dateNaissance: _dateController.text,
+        telephone: _telephoneController.text,
+        // Rôle temporaire : aucun choix n'est ajouté à l'interface.
+        // À valider avec l'inspectrice avant de gérer les comptes coach.
+        role: 'CLIENT',
+      );
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Formulaire valide : inscription à relier au backend.',
-          ),
+        SnackBar(
+          content: Text(result['message'] ?? 'Inscription réussie.'),
+          backgroundColor: Colors.green,
         ),
       );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignInPage()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      final message = e.toString().replaceFirst('Exception: ', '');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -358,8 +390,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 30),
                 // Bouton inscription
                 MelloButton(
-                  text: 'Créer mon compte',
-                  onPressed: _register,
+                  text: _isLoading ? 'Inscription...' : 'Créer mon compte',
+                  onPressed: _isLoading ? null : _register,
                 ),
                 const SizedBox(height: 20),
                 // Navigation vers la connexion
