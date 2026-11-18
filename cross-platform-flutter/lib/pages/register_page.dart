@@ -391,7 +391,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 // Bouton inscription
                 MelloButton(
                   text: _isLoading ? 'Inscription...' : 'Créer mon compte',
-                  onPressed: _isLoading ? null : _register,
+                  onPressed: _register,
                 ),
                 const SizedBox(height: 20),
                 // Navigation vers la connexion
