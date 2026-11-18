@@ -160,6 +160,7 @@ class _SignInPageState extends State<SignInPage> {
                 MelloButton(
                   text: 'Se connecter',
                   onPressed: _signIn,
+                  
                 ),
 
                 const SizedBox(height: 25),

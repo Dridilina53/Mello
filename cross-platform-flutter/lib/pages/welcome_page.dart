@@ -1,6 +1,4 @@
-
 import 'package:flutter/material.dart';
-
 import '../constants/app_colors.dart';
 import '../widgets/mello_logo.dart';
 import '../widgets/mello_button.dart';
@@ -9,7 +7,6 @@ import 'register_page.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
