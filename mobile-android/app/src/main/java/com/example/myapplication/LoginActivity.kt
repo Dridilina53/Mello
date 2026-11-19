@@ -31,8 +31,8 @@ class LoginActivity : AppCompatActivity() {
             if (email.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Remplissez tous les champs", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Bienvenue $email", Toast.LENGTH_LONG).show()
-            }
+                val intent = Intent(this, ReservationActivity::class.java)
+                startActivity(intent)            }
         }
 
         tvCreerCompte.setOnClickListener {
