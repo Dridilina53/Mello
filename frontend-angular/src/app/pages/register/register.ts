@@ -67,7 +67,13 @@ export class Register {
       return;
     }
     this.auth.register(v).subscribe({
-      next: () => this.router.navigate(['/login']),
+     next: () => {
+  if (v.role === 'client') {
+    this.router.navigate(['/client/dashboard']);
+  } else {
+    this.router.navigate(['/login']);
+  }
+},
       error: (err: any) => {
   this.erreur = err.error?.message || 'Erreur lors de l inscription';
 }

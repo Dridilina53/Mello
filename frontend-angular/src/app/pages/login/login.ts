@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth';
   styleUrl: './login.css',
 })
 export class Login {
+
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -24,13 +25,11 @@ export class Login {
   });
 
   onSubmit() {
-    console.log('Login function called');
 
     this.erreur = '';
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      console.log('Form is invalid');
       return;
     }
 
@@ -39,21 +38,41 @@ export class Login {
     this.loading = true;
 
     this.auth.login(email!, password!).subscribe({
+
       next: (response) => {
+
+        this.loading = false;
+
         console.log('LOGIN SUCCESS:', response);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
 
-        this.loading = false;
+        // Redirect according to user role
+        if (response.role === 'CLIENT') {
+          this.router.navigate(['/client/dashboard']);
+        }
 
-        alert('Welcome to Mello!');
+        else if (response.role === 'COACH') {
+          this.router.navigate(['/coach/dashboard']);
+        }
+
+        else if (response.role === 'ADMIN') {
+          this.router.navigate(['/admin/dashboard']);
+        }
+
+        else {
+          this.erreur = 'Unknown user role.';
+        }
       },
+
       error: (err) => {
+
         console.error('LOGIN ERROR:', err);
+
         this.loading = false;
+
         this.erreur =
-          'Login failed. Please try again.';
+          err.error?.message || 'Email or password incorrect.';
       }
+
     });
   }
 }

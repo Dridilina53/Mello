@@ -1,0 +1,114 @@
+
+<div class="page">
+
+  <header class="header">
+    <a class="logo">mello</a>
+
+    <div class="user">
+      <span>Espace client</span>
+      <div class="avatar">R</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="intro">
+      <h1>Les séances disponibles</h1>
+      <p>Découvrez les séances proposées par nos coachs.</p>
+    </section>
+
+    <section class="search">
+      <input
+        type="text"
+        placeholder="Rechercher par coach ou spécialité..."
+        [(ngModel)]="recherche_text"
+      />
+      <button type="button">Rechercher</button>
+    </section>
+
+    <section class="sessions">
+
+      <div class="section-title">
+        <h2>Toutes les séances</h2>
+        <span>{{ filteredSessions.length }} résultats</span>
+      </div>
+
+      <div class="sessions-grid">
+
+        @for (session of filteredSessions; track session.coach + session.date) {
+          <article class="session-card">
+
+            <div class="coach">
+              <div class="avatar coach-avatar">{{ session.initials }}</div>
+              <div>
+                <h3>{{ session.coach }}</h3>
+                <p>Coach</p>
+              </div>
+            </div>
+
+            <h4>{{ session.specialty }}</h4>
+
+            <div class="details">
+              <p>Date : {{ session.date }}</p>
+              <p>Heure : {{ session.time }}</p>
+              <p>Durée : {{ session.duration }}</p>
+            </div>
+
+            <div class="card-bottom">
+              <strong>{{ session.price }}</strong>
+              <button
+                type="button"
+                (click)="reserver(session)">
+                Réserver
+              </button>
+            </div>
+
+          </article>
+        } @empty {
+          <p class="empty">Aucune séance disponible.</p>
+        }
+
+      </div>
+    </section>
+    @if (selectedSession) {
+
+  <div class="reservation-overlay">
+
+    <div class="reservation-form">
+
+      <h2>Réserver une séance</h2>
+
+      <p>Coach : {{ selectedSession.coach }}</p>
+      <p>Spécialité : {{ selectedSession.specialty }}</p>
+      <p>Date : {{ selectedSession.date }}</p>
+      <p>Heure : {{ selectedSession.time }}</p>
+      <p>Prix : {{ selectedSession.price }}</p>
+
+      <label for="message">Message (facultatif)</label>
+      <textarea
+        id="message"
+        placeholder="Écrivez un message au coach..."
+      ></textarea>
+
+      <div class="form-buttons">
+        <button type="button" (click)="selectedSession = null">
+          Annuler
+        </button>
+
+        <button type="button" (click)="confirmerReservation()">
+          Confirmer la réservation
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+}
+  </main>
+
+  <footer>
+    Mello © 2026
+  </footer>
+
+</div>
