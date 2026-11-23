@@ -86,9 +86,10 @@
 
       <label for="message">Message (facultatif)</label>
       <textarea
-        id="message"
-        placeholder="Écrivez un message au coach..."
-      ></textarea>
+  id="message"
+  [(ngModel)]="message"
+  placeholder="Écrivez un message au coach..."
+></textarea>
 
       <div class="form-buttons">
         <button type="button" (click)="selectedSession = null">
