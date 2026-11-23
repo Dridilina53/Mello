@@ -9,9 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/api/reservations")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -24,24 +21,22 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> creerReservation(
+    public ResponseEntity<?> createReservation(
             @RequestBody ReservationRequest request) {
 
-        Reservation reservation = reservationService.creerReservation(
-                request.getClientId(),
-                request.getSeanceId(),
-                request.getMessage()
-        );
+        try {
+            Reservation reservation =
+                    reservationService.createReservation(request);
 
-        Map<String, Object> response = new LinkedHashMap<>();
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(reservation);
 
-        response.put("message", "Réservation créée avec succès");
-        response.put("idReservation", reservation.getIdReservation());
-        response.put("clientId", reservation.getClient().getId());
-        response.put("seanceId", reservation.getSeance().getIdSeance());
-        response.put("statut", reservation.getStatut());
-        response.put("dateReservation", reservation.getDateReservation());
+        } catch (IllegalArgumentException e) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity
+                    .badRequest()
+                    .body(e.getMessage());
+        }
     }
 }
