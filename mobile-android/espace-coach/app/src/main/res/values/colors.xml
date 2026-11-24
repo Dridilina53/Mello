@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Couleurs de Mello (les mêmes que l'application Flutter) -->
+    <color name="fond">#F5F0EA</color>
+    <color name="marron">#7D5A44</color>
+    <color name="texte">#3D302A</color>
+    <color name="texte_secondaire">#66554D</color>
+    <color name="bordure">#E3D8CA</color>
+    <color name="beige">#EDE3D6</color>
+    <color name="erreur">#B3261E</color>
+</resources>
