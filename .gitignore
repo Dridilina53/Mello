@@ -1,3 +1,11 @@
 /mello-source/
 **/node_modules/
 **/.env
+# IDE files
+.idea/
+**/.idea/
+
+# Android local files
+**/local.properties
+**/.gradle/
+**/build/

@@ -1,4 +1,4 @@
-
+import '../services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
@@ -29,15 +29,34 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
-  void _signIn() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _signIn() async {
+  if (_formKey.currentState!.validate()) {
+    try {
+      final result = await AuthService().login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Interface prête : connexion à relier au backend.'),
+        SnackBar(
+          content: Text(result['message'] ?? 'Connexion réussie !'),
+        ),
+      );
+
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
         ),
       );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
