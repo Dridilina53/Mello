@@ -33,81 +33,126 @@ class LoginActivity : AppCompatActivity() {
 
         btnSeConnecter.setOnClickListener {
 
-            val email = edtEmail.text.toString()
+            val email = edtEmail.text.toString().trim()
             val pass = edtPass.text.toString()
 
             if (email.isEmpty() || pass.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Remplissez tous les champs",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
 
-                Toast.makeText(this, "Remplissez tous les champs", Toast.LENGTH_SHORT).show()
+            btnSeConnecter.isEnabled = false
 
-            } else {
+            Thread {
+                var connexion: HttpURLConnection? = null
 
-                // Connexion avec le backend
-                Thread {
+                try {
+                    val url = URL("http://10.0.2.2:8080/api/auth/login")
+                    connexion = url.openConnection() as HttpURLConnection
 
-                    try {
+                    connexion.requestMethod = "POST"
+                    connexion.setRequestProperty("Content-Type", "application/json")
+                    connexion.connectTimeout = 10000
+                    connexion.readTimeout = 10000
+                    connexion.doOutput = true
 
-                        val url = URL("http://10.0.2.2:8080/api/auth/login")
-                        val connexion = url.openConnection() as HttpURLConnection
+                    val donnees = JSONObject()
+                    donnees.put("email", email)
+                    donnees.put("password", pass)
 
-                        connexion.requestMethod = "POST"
-                        connexion.setRequestProperty("Content-Type", "application/json")
-                        connexion.doOutput = true
+                    OutputStreamWriter(connexion.outputStream).use {
+                        it.write(donnees.toString())
+                    }
 
-                        val donnees = JSONObject()
-                        donnees.put("email", email)
-                        donnees.put("password", pass)
+                    val code = connexion.responseCode
 
-                        val writer = OutputStreamWriter(connexion.outputStream)
-                        writer.write(donnees.toString())
-                        writer.flush()
-                        writer.close()
+                    val flux = if (code == 200) {
+                        connexion.inputStream
+                    } else {
+                        connexion.errorStream
+                    }
 
-                        val code = connexion.responseCode
+                    val reponse = flux?.bufferedReader()?.use {
+                        it.readText()
+                    } ?: ""
 
-                        val flux = if (code == 200) {
-                            connexion.inputStream
-                        } else {
-                            connexion.errorStream
-                        }
+                    val resultat = JSONObject(reponse)
+                    val message = resultat.optString(
+                        "message",
+                        "Une erreur est survenue."
+                    )
 
-                        val reader = BufferedReader(InputStreamReader(flux))
-                        val reponse = reader.readText()
-                        reader.close()
+                    val role = resultat.optString("role")
+                    val userId = resultat.optInt("userId", -1)
 
-                        val resultat = JSONObject(reponse)
-                        val message = resultat.optString("message")
+                    runOnUiThread {
+                        btnSeConnecter.isEnabled = true
 
-                        runOnUiThread {
+                        if (code == 200) {
+                            when (role.uppercase()) {
 
-                            if (code == 200) {
+                                "CLIENT" -> {
+                                    Toast.makeText(
+                                        this,
+                                        message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
 
-                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(
+                                        this,
+                                        ClientActivity::class.java
+                                    )
+                                    intent.putExtra("userId", userId)
+                                    intent.putExtra("email", email)
+                                    startActivity(intent)
+                                }
 
-                                val intent = Intent(this, ClientActivity::class.java)
-                                startActivity(intent)
+                                "COACH" -> {
+                                    Toast.makeText(
+                                        this,
+                                        "Connexion réussie ! Espace coach en cours de préparation.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
 
-                            } else {
-
-                                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                                else -> {
+                                    Toast.makeText(
+                                        this,
+                                        "Rôle utilisateur non reconnu.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
-                        }
 
-                        connexion.disconnect()
-
-                    } catch (e: Exception) {
-
-                        runOnUiThread {
+                        } else {
                             Toast.makeText(
                                 this,
-                                "Erreur de connexion au serveur : ${e.message}",
+                                message,
                                 Toast.LENGTH_LONG
                             ).show()
                         }
                     }
 
-                }.start()
-            }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        btnSeConnecter.isEnabled = true
+
+                        Toast.makeText(
+                            this,
+                            "Erreur de connexion au serveur : ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+
+                } finally {
+                    connexion?.disconnect()
+                }
+
+            }.start()
         }
 
         tvCreerCompte.setOnClickListener {
