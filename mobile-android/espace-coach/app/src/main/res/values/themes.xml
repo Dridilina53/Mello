@@ -1,0 +1,12 @@
+<resources>
+    <!-- Thème clair aux couleurs de Mello -->
+    <style name="Base.Theme.EspaceCoach" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/marron</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:windowBackground">@color/fond</item>
+        <item name="android:statusBarColor">@color/fond</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.EspaceCoach" parent="Base.Theme.EspaceCoach" />
+</resources>
