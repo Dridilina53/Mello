@@ -1,13 +1,15 @@
-
 package com.example.demo.controller;
 
 import com.example.demo.dto.ReservationRequest;
+import com.example.demo.dto.ReservationResponse;
 import com.example.demo.entity.Reservation;
 import com.example.demo.service.ReservationService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -37,6 +39,57 @@ public class ReservationController {
             return ResponseEntity
                     .badRequest()
                     .body(e.getMessage());
+        }
+    }
+
+    // GÉRER LES RÉSERVATIONS (côté coach) 
+
+    // GET 
+    @GetMapping("/coach")
+    public ResponseEntity<?> getReservationsDuCoach(
+            @RequestParam String coachNom) {
+
+        try {
+            List<ReservationResponse> liste =
+                    reservationService.getReservationsDuCoach(coachNom);
+
+            return ResponseEntity.ok(liste);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // PUT 
+    @PutMapping("/{id}/accepter")
+    public ResponseEntity<?> accepterReservation(
+            @PathVariable Integer id,
+            @RequestParam String coachNom) {
+
+        try {
+            ReservationResponse reponse =
+                    reservationService.accepterReservation(id, coachNom);
+
+            return ResponseEntity.ok(reponse);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // DELETE 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> supprimerReservation(
+            @PathVariable Integer id,
+            @RequestParam String coachNom) {
+
+        try {
+            reservationService.supprimerReservation(id, coachNom);
+
+            return ResponseEntity.noContent().build();
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
