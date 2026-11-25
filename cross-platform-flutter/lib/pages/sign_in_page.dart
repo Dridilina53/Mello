@@ -5,6 +5,7 @@ import '../constants/app_colors.dart';
 import '../widgets/mello_logo.dart';
 import '../widgets/mello_button.dart';
 import '../widgets/mello_text_field.dart';
+import 'reservation_page.dart';
 import 'register_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -30,31 +31,52 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _signIn() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      final result = await AuthService().login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+  if (!_formKey.currentState!.validate()) return;
 
-      if (!mounted) return;
+  try {
+    final result = await AuthService().login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Connexion réussie !'),
+    if (!mounted) return;
+
+    final role = result['role']?.toString().toUpperCase();
+
+    if (role == 'CLIENT') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ReservationPage(),
         ),
       );
-
-    } catch (e) {
-      if (!mounted) return;
-
+    } else if (role == 'COACH') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceFirst('Exception: ', '')),
+        const SnackBar(
+          content: Text(
+            'Connexion réussie ! L’espace coach sera intégré prochainement.',
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rôle utilisateur non reconnu.'),
           backgroundColor: Colors.red,
         ),
       );
     }
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e.toString().replaceFirst('Exception: ', ''),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }
 

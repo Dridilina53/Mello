@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 import '../widgets/mello_logo.dart';
 import '../widgets/mello_button.dart';
 import '../widgets/mello_text_field.dart';
+import '../services/auth_service.dart';
 import 'sign_in_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -65,18 +65,56 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void _register() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Formulaire valide : inscription à relier au backend.',
-          ),
-        ),
-      );
-    }
+  Future<void> _register() async {
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
 
+  try {
+    final dateParts = _dateController.text.split('/');
+
+    final dateNaissance =
+        '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
+
+    final result = await AuthService().register({
+      'nom': _nomController.text.trim(),
+      'prenom': _prenomController.text.trim(),
+      'email': _emailController.text.trim(),
+      'telephone': _telephoneController.text.trim(),
+      'dateNaissance': dateNaissance,
+      'role': 'CLIENT',
+      'password': _passwordController.text,
+    });
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result['message'] ?? 'Inscription réussie !',
+        ),
+      ),
+    );
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SignInPage(),
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          e.toString().replaceFirst('Exception: ', ''),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
   String? _requiredValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Ce champ est obligatoire';

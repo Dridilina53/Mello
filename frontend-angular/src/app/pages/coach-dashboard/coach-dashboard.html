@@ -1,0 +1,172 @@
+<div class="page">
+
+  <header class="header">
+    <a class="logo">mello</a>
+    <div class="user">
+      <span>Espace coach</span>
+      <div class="avatar">C</div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="intro">
+      <h1>Bienvenue dans votre espace coach</h1>
+      <p>Gérez vos séances et vos demandes de réservation.</p>
+    </section>
+
+    <nav class="menu">
+      <button [class.active]="activeSection === 'demandes'"
+        (click)="changeSection('demandes')">
+        Demandes
+      </button>
+
+      <button [class.active]="activeSection === 'seances'"
+        (click)="changeSection('seances')">
+        Mes séances
+      </button>
+
+      <button [class.active]="activeSection === 'historique'"
+        (click)="changeSection('historique')">
+        Historique
+      </button>
+    </nav>
+
+    @if (activeSection === 'demandes') {
+      <section class="content">
+        <h2>Demandes de réservation</h2>
+        <p>Consultez les demandes envoyées par vos clients.</p>
+      </section>
+    }
+
+    @if (activeSection === 'seances') {
+      <section class="content">
+
+        <div class="section-header">
+          <div>
+            <h2>Mes séances</h2>
+            <p>Ajoutez et gérez vos créneaux disponibles pour les clients.</p>
+          </div>
+
+          <button class="add-btn" (click)="ouvrirFormulaire()">
+            + Ajouter une séances
+          </button>
+        </div>
+
+        @if (showForm) {
+          <div class="session-form">
+
+            <h3>
+              {{ editingSessionId === null ? 'Nouvelle disponibilité' : 'Modifier la disponibilité' }}
+            </h3>
+
+            <form (ngSubmit)="editingSessionId === null ? ajouterSeance() : enregistrerModification()">
+
+              <label>Titre de la séance</label>
+              <input type="text" name="titre"
+                [(ngModel)]="newSession.titre" required>
+
+              <label>Spécialité</label>
+              <select name="specialite"
+                [(ngModel)]="newSession.specialite" required>
+                <option [ngValue]="1">Gestion du stress</option>
+                <option [ngValue]="2">Développement personnel</option>
+                <option [ngValue]="3">Confiance en soi</option>
+                <option [ngValue]="4">Coaching professionnel</option>
+                <option [ngValue]="5">Gestion du temps</option>
+                <option [ngValue]="6">Leadership</option>
+                <option [ngValue]="7">Communication</option>
+                <option [ngValue]="8">Orientation professionnelle</option>
+              </select>
+
+              <label>Description</label>
+              <textarea name="description"
+                [(ngModel)]="newSession.description"></textarea>
+
+              <div class="availability-section">
+
+                <h4>Disponibilité</h4>
+                <p>Choisissez la date, l'heure de début et la durée de votre créneau.</p>
+
+                <label>Date de disponibilité</label>
+                <input type="date" name="date"
+                  [(ngModel)]="newSession.date" required>
+
+                <label>Heure de début</label>
+                <input type="time" name="heure"
+                  [(ngModel)]="newSession.heure" required>
+
+                <label>Durée (minutes)</label>
+                <input type="number" name="duree"
+                  [(ngModel)]="newSession.duree" min="1" required>
+
+              </div>
+
+              <label>Prix (DT)</label>
+              <input type="number" name="prix"
+                [(ngModel)]="newSession.prix" min="0" required>
+
+              <div class="form-buttons">
+                <button type="button" (click)="annulerFormulaire()">
+                  Annuler
+                </button>
+
+                <button type="submit" class="add-btn">
+                  {{ editingSessionId === null ? 'Ajouter la disponibilité' : 'Enregistrer les modifications' }}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        }
+
+        <div class="sessions-list">
+
+          <h3>Mes créneaux enregistrés</h3>
+
+          @for (session of sessions; track session.idSeance) {
+            <div class="session-item">
+
+              <h3>{{ session.titre }}</h3>
+              <p>Spécialité : {{ session.idSpecialite }}</p>
+              <p>Date : {{ session.dateSeance }}</p>
+              <p>Horaire : {{ session.heureDebut }} - {{ session.heureFin }}</p>
+              <p>Prix : {{ session.prix }} DT</p>
+              <p>Statut : {{ session.statut }}</p>
+
+              <div class="form-buttons">
+                <button type="button"
+                  (click)="modifierSeance(session)">
+                  Modifier
+                </button>
+
+                <button type="button"
+                  (click)="supprimerSeance(session.idSeance)">
+                  Supprimer
+                </button>
+              </div>
+
+            </div>
+          } @empty {
+            <p>Aucune disponibilité ajoutée pour le moment.</p>
+          }
+
+        </div>
+
+      </section>
+    }
+
+    @if (activeSection === 'historique') {
+      <section class="content">
+        <h2>Historique</h2>
+        <p>Consultez vos anciennes réservations.</p>
+      </section>
+    }
+
+  </main>
+
+  <footer>
+    Mello © 2026
+  </footer>
+
+</div>
