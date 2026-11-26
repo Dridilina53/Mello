@@ -2,6 +2,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.ReservationRequest;
+import com.example.demo.dto.ReservationResponse;
 import com.example.demo.entity.Reservation;
 import com.example.demo.entity.User;
 import com.example.demo.repository.ReservationRepository;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -29,26 +32,20 @@ public class ReservationService {
     @Transactional
     public Reservation createReservation(ReservationRequest request) {
 
-        // 1. Find the client
         User client = userRepository.findById(request.getClientId())
                 .orElseThrow(() ->
                         new IllegalArgumentException("Client introuvable."));
 
-        // 2. Verify that the account belongs to a client
         if (!"CLIENT".equalsIgnoreCase(client.getRole())) {
             throw new IllegalArgumentException(
                     "Seuls les clients peuvent effectuer une réservation.");
         }
 
-        // 3. Create a new reservation
         Reservation reservation = new Reservation();
 
         reservation.setClient(client);
-
-        // No seance relationship for now
         reservation.setSeance(null);
 
-        // 4. Save session information
         reservation.setTitreSeance(request.getTitreSeance());
         reservation.setCoachNom(request.getCoachNom());
         reservation.setSpecialite(request.getSpecialite());
@@ -57,14 +54,98 @@ public class ReservationService {
         reservation.setDureeMinutes(request.getDureeMinutes());
         reservation.setPrix(request.getPrix());
 
-        // 5. Save reservation information
         reservation.setMessage(request.getMessage());
         reservation.setDateReservation(LocalDateTime.now());
-
-        // 6. Set initial status
         reservation.setStatut("EN_ATTENTE");
 
-        // 7. Save in MySQL
         return reservationRepository.save(reservation);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReservationResponse> getReservationsDuCoach(String coachNom) {
+
+        verifierNomCoach(coachNom);
+
+        return reservationRepository.findAll().stream()
+                .filter(r -> r.getCoachNom() != null
+                        && r.getCoachNom().equalsIgnoreCase(coachNom.trim()))
+                .map(this::versReponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public ReservationResponse accepterReservation(Integer id, String coachNom) {
+
+        Reservation reservation = trouverPourCoach(id, coachNom);
+
+        if (!"EN_ATTENTE".equals(reservation.getStatut())) {
+            throw new IllegalArgumentException(
+                    "Cette demande n'est plus en attente.");
+        }
+
+        reservation.setStatut("CONFIRMEE");
+
+        return versReponse(reservationRepository.save(reservation));
+    }
+
+    @Transactional
+    public ReservationResponse refuserReservation(Integer id, String coachNom) {
+
+        Reservation reservation = trouverPourCoach(id, coachNom);
+
+        if (!"EN_ATTENTE".equals(reservation.getStatut())) {
+            throw new IllegalArgumentException(
+                    "Cette demande n'est plus en attente.");
+        }
+
+        reservation.setStatut("ANNULEE");
+
+        return versReponse(reservationRepository.save(reservation));
+    }
+
+    private void verifierNomCoach(String coachNom) {
+
+        if (coachNom == null || coachNom.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Le nom du coach est obligatoire.");
+        }
+    }
+
+    private Reservation trouverPourCoach(Integer id, String coachNom) {
+
+        verifierNomCoach(coachNom);
+
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Réservation introuvable."));
+
+        if (reservation.getCoachNom() == null
+                || !reservation.getCoachNom().equalsIgnoreCase(coachNom.trim())) {
+            throw new IllegalArgumentException(
+                    "Cette réservation n'est pas adressée à ce coach.");
+        }
+
+        return reservation;
+    }
+
+    private ReservationResponse versReponse(Reservation r) {
+
+        return new ReservationResponse(
+                r.getIdReservation(),
+                nomDuClient(r.getClient()),
+                r.getTitreSeance(),
+                r.getCoachNom(),
+                r.getSpecialite(),
+                r.getDateSeance(),
+                r.getHeureDebut(),
+                r.getDureeMinutes(),
+                r.getPrix(),
+                r.getMessage(),
+                r.getStatut()
+        );
+    }
+
+    private String nomDuClient(User client) {
+        return client.getPrenom() + " " + client.getNom();
     }
 }
