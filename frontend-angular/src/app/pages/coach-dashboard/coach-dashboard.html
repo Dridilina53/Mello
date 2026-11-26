@@ -32,13 +32,45 @@
       </button>
     </nav>
 
-    @if (activeSection === 'demandes') {
-      <section class="content">
-        <h2>Demandes de réservation</h2>
-        <p>Consultez les demandes envoyées par vos clients.</p>
-      </section>
-    }
+   @if (activeSection === 'demandes') {
+  <section class="content">
+    <h2>Demandes de réservation</h2>
+    <p>Consultez et gérez les demandes envoyées par vos clients.</p>
 
+    <div class="reservations-list">
+      @for (reservation of reservations; track reservation.idReservation) {
+        @if (reservation.statut === 'EN_ATTENTE') {
+          <div class="reservation-item">
+            <h3>{{ reservation.titreSeance }}</h3>
+
+            <p><strong>Client :</strong> {{ reservation.clientNom }}</p>
+            <p><strong>Spécialité :</strong> {{ reservation.specialite }}</p>
+            <p><strong>Date :</strong> {{ reservation.dateSeance }}</p>
+            <p><strong>Heure :</strong> {{ reservation.heureDebut }}</p>
+            <p><strong>Durée :</strong> {{ reservation.dureeMinutes }} minutes</p>
+            <p><strong>Prix :</strong> {{ reservation.prix }} DT</p>
+            <p><strong>Message :</strong> {{ reservation.message || 'Aucun message' }}</p>
+            <p><strong>Statut :</strong> En attente</p>
+
+            <div class="form-buttons">
+              <button type="button"
+                (click)="accepterReservation(reservation.idReservation)">
+                Accepter
+              </button>
+
+              <button type="button"
+                (click)="refuserReservation(reservation.idReservation)">
+                Refuser
+              </button>
+            </div>
+          </div>
+        }
+      } @empty {
+        <p>Aucune demande de réservation pour le moment.</p>
+      }
+    </div>
+  </section>
+}
     @if (activeSection === 'seances') {
       <section class="content">
 
@@ -157,11 +189,29 @@
     }
 
     @if (activeSection === 'historique') {
-      <section class="content">
-        <h2>Historique</h2>
-        <p>Consultez vos anciennes réservations.</p>
-      </section>
-    }
+  <section class="content">
+    <h2>Historique des réservations</h2>
+    <p>Retrouvez les réservations acceptées et refusées.</p>
+
+    <div class="reservations-list">
+      @for (reservation of reservations; track reservation.idReservation) {
+        @if (reservation.statut !== 'EN_ATTENTE') {
+          <div class="reservation-item">
+            <h3>{{ reservation.titreSeance }}</h3>
+
+            <p><strong>Client :</strong> {{ reservation.clientNom }}</p>
+            <p><strong>Date :</strong> {{ reservation.dateSeance }}</p>
+            <p><strong>Heure :</strong> {{ reservation.heureDebut }}</p>
+            <p><strong>Prix :</strong> {{ reservation.prix }} DT</p>
+            <p><strong>Statut :</strong> {{ reservation.statut }}</p>
+          </div>
+        }
+      } @empty {
+        <p>Aucune réservation dans l'historique.</p>
+      }
+    </div>
+  </section>
+}
 
   </main>
 

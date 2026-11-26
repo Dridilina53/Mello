@@ -1,6 +1,11 @@
+
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SeanceService } from '../../services/seance.service';
+import {
+  ReservationService,
+  ReservationResponse
+} from '../../services/reservation.service';
 
 @Component({
   selector: 'app-coach-dashboard',
@@ -12,14 +17,18 @@ import { SeanceService } from '../../services/seance.service';
 export class CoachDashboard implements OnInit {
 
   private seanceService = inject(SeanceService);
+  private reservationService = inject(ReservationService);
 
   activeSection = 'demandes';
   showForm = false;
 
-  // Identifiant de la séance en cours de modification
   editingSessionId: number | null = null;
 
   coachId = Number(localStorage.getItem('userId'));
+  coachNom = localStorage.getItem('coachNom') || '';
+
+  reservations: ReservationResponse[] = [];
+  sessions: any[] = [];
 
   newSession = {
     titre: '',
@@ -31,15 +40,75 @@ export class CoachDashboard implements OnInit {
     prix: 0
   };
 
-  sessions: any[] = [];
-
   ngOnInit() {
     this.chargerSeances();
+    this.chargerReservations();
   }
 
   changeSection(section: string) {
     this.activeSection = section;
+
+    if (section === 'demandes' || section === 'historique') {
+      this.chargerReservations();
+    }
   }
+
+
+  chargerReservations() {
+    if (!this.coachNom) {
+      console.error('Nom du coach introuvable.');
+      return;
+    }
+
+    this.reservationService.getReservationsCoach(this.coachNom)
+      .subscribe({
+        next: (data) => {
+          this.reservations = data;
+        },
+        error: (err) => {
+          console.error('Erreur chargement réservations :', err);
+        }
+      });
+  }
+
+  accepterReservation(id: number) {
+    this.reservationService.accepterReservation(
+      id,
+      this.coachNom
+    ).subscribe({
+      next: () => {
+        alert('Réservation acceptée avec succès !');
+        this.chargerReservations();
+      },
+      error: (err) => {
+        console.error('Erreur acceptation réservation :', err);
+        alert(err.error?.message || 'Erreur lors de l’acceptation.');
+      }
+    });
+  }
+
+  refuserReservation(id: number) {
+    const confirmation = confirm(
+      'Voulez-vous vraiment refuser cette réservation ?'
+    );
+
+    if (!confirmation) return;
+
+    this.reservationService.refuserReservation(
+      id,
+      this.coachNom
+    ).subscribe({
+      next: () => {
+        alert('Réservation refusée.');
+        this.chargerReservations();
+      },
+      error: (err) => {
+        console.error('Erreur refus réservation :', err);
+        alert(err.error?.message || 'Erreur lors du refus.');
+      }
+    });
+  }
+
 
   chargerSeances() {
     this.seanceService.getSeancesCoach(this.coachId).subscribe({
@@ -76,9 +145,7 @@ export class CoachDashboard implements OnInit {
     };
   }
 
-  // Ajouter une disponibilité
   ajouterSeance() {
-
     const seance = {
       coachId: this.coachId,
       idSpecialite: this.newSession.specialite,
@@ -91,24 +158,19 @@ export class CoachDashboard implements OnInit {
     };
 
     this.seanceService.ajouterSeance(seance).subscribe({
-
       next: () => {
         alert('Séance ajoutée avec succès !');
         this.chargerSeances();
         this.annulerFormulaire();
       },
-
       error: (err) => {
         console.error('Erreur ajout séance :', err);
         alert('Erreur lors de l’ajout de la séance.');
       }
-
     });
   }
 
-  // Préparer la modification d'une séance
   modifierSeance(session: any) {
-
     this.editingSessionId = session.idSeance;
 
     const debut = session.heureDebut.substring(0, 5);
@@ -139,12 +201,8 @@ export class CoachDashboard implements OnInit {
     this.showForm = true;
   }
 
-  // Enregistrer les modifications
   enregistrerModification() {
-
-    if (this.editingSessionId === null) {
-      return;
-    }
+    if (this.editingSessionId === null) return;
 
     const seance = {
       coachId: this.coachId,
@@ -162,42 +220,33 @@ export class CoachDashboard implements OnInit {
       this.coachId,
       seance
     ).subscribe({
-
       next: () => {
         alert('Séance modifiée avec succès !');
         this.chargerSeances();
         this.annulerFormulaire();
       },
-
       error: (err) => {
         console.error('Erreur modification séance :', err);
         alert('Erreur lors de la modification de la séance.');
       }
-
     });
   }
 
-  // Supprimer une disponibilité
   supprimerSeance(idSeance: number) {
-
     const confirmation = confirm(
       'Voulez-vous vraiment supprimer cette disponibilité ?'
     );
 
-    if (!confirmation) {
-      return;
-    }
+    if (!confirmation) return;
 
     this.seanceService.supprimerSeance(
       idSeance,
       this.coachId
     ).subscribe({
-
       next: () => {
         alert('Séance supprimée avec succès !');
         this.chargerSeances();
       },
-
       error: (err) => {
         console.error('Erreur suppression séance :', err);
 
@@ -207,7 +256,6 @@ export class CoachDashboard implements OnInit {
           alert('Impossible de supprimer cette séance.');
         }
       }
-
     });
   }
 }

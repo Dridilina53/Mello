@@ -23,7 +23,6 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // REGISTER
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @RequestBody RegisterRequest request) {
@@ -45,7 +44,6 @@ public class AuthController {
         }
     }
 
-    // LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest request) {
@@ -58,7 +56,8 @@ public class AuthController {
                     "message", "Connexion réussie !",
                     "userId", user.getId(),
                     "email", user.getEmail(),
-                    "role", user.getRole()
+                    "role", user.getRole(),
+                    "coachNom", user.getPrenom() + " " + user.getNom()
                 )
             );
 

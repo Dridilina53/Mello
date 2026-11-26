@@ -271,3 +271,57 @@ footer {
   font-family: Arial, sans-serif;
   background: white;
 }
+
+
+.reservations-list {
+  margin-top: 25px;
+}
+
+.reservation-item {
+  background: #F5F1EA;
+  border: 1px solid #D7C9B8;
+  border-left: 5px solid #B2967D;
+  border-radius: 10px;
+  padding: 22px;
+  margin-bottom: 18px;
+  transition: 0.3s;
+}
+
+.reservation-item:hover {
+  box-shadow: 0 4px 12px rgba(74, 52, 42, 0.10);
+}
+
+.reservation-item h3 {
+  color: #4A342A;
+  font-size: 19px;
+  margin-bottom: 15px;
+}
+
+.reservation-item p {
+  color: #7D5A44;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.reservation-item strong {
+  color: #4A342A;
+}
+
+.reservation-item .form-buttons button:first-child {
+  background: #4A342A;
+  color: white;
+}
+
+.reservation-item .form-buttons button:first-child:hover {
+  background: #7D5A44;
+}
+
+.reservation-item .form-buttons button:last-child {
+  background: #D7C9B8;
+  color: #4A342A;
+}
+
+.reservation-item .form-buttons button:last-child:hover {
+  background: #B2967D;
+  color: white;
+}

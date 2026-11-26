@@ -44,10 +44,10 @@ export class Login {
         this.loading = false;
 
         console.log('LOGIN SUCCESS:', response);
-localStorage.setItem('userId', response.userId.toString());
-localStorage.setItem('email', response.email);
-localStorage.setItem('role', response.role);
-        // Redirect according to user role
+        localStorage.setItem('userId', response.userId.toString());
+        localStorage.setItem('email', response.email);
+        localStorage.setItem('role', response.role);
+        localStorage.setItem('coachNom', response.coachNom);
         if (response.role === 'CLIENT') {
           this.router.navigate(['/client/dashboard']);
         }
