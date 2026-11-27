@@ -74,23 +74,33 @@ class DemandesActivity : AppCompatActivity() {
                         it.readText()
                     }
 
+                    android.util.Log.d(
+                        "MELLO_JSON",
+                        "Réponse backend : $reponse"
+                    )
+
                     val tableau = JSONArray(reponse)
                     val liste = mutableListOf<Demande>()
 
                     for (i in 0 until tableau.length()) {
                         val obj = tableau.getJSONObject(i)
 
-                        liste.add(
-                            Demande(
-                                id = obj.optInt("id"),
-                                clientNom = obj.optString("clientNom", "Client"),
-                                seanceTitre = obj.optString("titreSeance", "Séance"),
-                                date = obj.optString("dateSeance", "").take(10),
-                                heure = obj.optString("heureDebut", "").take(5),
-                                statut = obj.optString("statut", "EN_ATTENTE"),
-                                message = obj.optString("message", "")
-                            )
+                        val demande = Demande(
+                            id = obj.optInt("idReservation", -1),
+                            clientNom = obj.optString("clientNom", "Client"),
+                            seanceTitre = obj.optString("titreSeance", "Séance"),
+                            date = obj.optString("dateSeance", "").take(10),
+                            heure = obj.optString("heureDebut", "").take(5),
+                            statut = obj.optString("statut", "EN_ATTENTE"),
+                            message = obj.optString("message", "")
                         )
+
+                        android.util.Log.d(
+                            "MELLO_JSON",
+                            "ID dans Demande : ${demande.id}"
+                        )
+
+                        liste.add(demande)
                     }
 
                     runOnUiThread {
@@ -138,6 +148,24 @@ class DemandesActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("MelloSession", MODE_PRIVATE)
         val coachNom = prefs.getString("coachNom", "") ?: ""
 
+        if (coachNom.isBlank()) {
+            Toast.makeText(
+                this,
+                "Nom du coach introuvable",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        if (id <= 0) {
+            Toast.makeText(
+                this,
+                "Identifiant de réservation invalide : $id",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
         Thread {
             var connexion: HttpURLConnection? = null
 
@@ -145,12 +173,25 @@ class DemandesActivity : AppCompatActivity() {
                 val nomEncode = URLEncoder.encode(coachNom, "UTF-8")
                 val url = URL("$baseUrl/$id/$action?coachNom=$nomEncode")
 
+                android.util.Log.d("MELLO_DEBUG", "ID envoyé : $id")
+                android.util.Log.d("MELLO_DEBUG", "URL envoyée : $url")
+
                 connexion = url.openConnection() as HttpURLConnection
                 connexion.requestMethod = "PUT"
                 connexion.connectTimeout = 10000
                 connexion.readTimeout = 10000
 
                 val code = connexion.responseCode
+
+                val stream = if (code in 200..299) {
+                    connexion.inputStream
+                } else {
+                    connexion.errorStream
+                }
+
+                val reponse = stream?.bufferedReader()?.use {
+                    it.readText()
+                } ?: "Aucun détail fourni par le serveur"
 
                 runOnUiThread {
                     if (code in 200..299) {
@@ -163,7 +204,7 @@ class DemandesActivity : AppCompatActivity() {
                         Toast.makeText(
                             this,
                             message,
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         ).show()
 
                         afficherDemandes()
@@ -171,7 +212,7 @@ class DemandesActivity : AppCompatActivity() {
                     } else {
                         Toast.makeText(
                             this,
-                            "Erreur serveur : $code",
+                            "Erreur HTTP $code : $reponse",
                             Toast.LENGTH_LONG
                         ).show()
                     }

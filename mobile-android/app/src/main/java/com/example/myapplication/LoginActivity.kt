@@ -99,7 +99,6 @@ class LoginActivity : AppCompatActivity() {
                     btnConnexion.text = "Se connecter"
 
                     if (succes) {
-                        // Enregistrer la session commune
                         getSharedPreferences("MelloSession", MODE_PRIVATE)
                             .edit()
                             .putInt("userId", userId)
@@ -109,7 +108,6 @@ class LoginActivity : AppCompatActivity() {
                             .apply()
 
                         if (role == "CLIENT") {
-                            // Conserver les préférences déjà utilisées par l'espace Client
                             getSharedPreferences("MelloClient", MODE_PRIVATE)
                                 .edit()
                                 .putInt("userId", userId)
@@ -118,7 +116,6 @@ class LoginActivity : AppCompatActivity() {
 
                             startActivity(Intent(this, ClientActivity::class.java))
                         } else {
-                            // Ouvrir l'espace Coach
                             startActivity(Intent(this, DashboardActivity::class.java))
                         }
 
