@@ -3,7 +3,6 @@ package com.example.myapplication
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
@@ -24,63 +23,10 @@ class SignupActivity : AppCompatActivity() {
         val edtEmail = findViewById<EditText>(R.id.edtEmail)
         val edtTelephone = findViewById<EditText>(R.id.edtTelephone)
         val edtNaissance = findViewById<EditText>(R.id.edtNaissance)
-        val spinnerRole = findViewById<Spinner>(R.id.spinnerRole)
-        val layoutCoach = findViewById<LinearLayout>(R.id.layoutCoach)
-        val spinnerSpecialite = findViewById<Spinner>(R.id.spinnerSpecialite)
-        val edtExperience = findViewById<EditText>(R.id.edtExperience)
-        val edtDiplome = findViewById<EditText>(R.id.edtDiplome)
-        val edtBio = findViewById<EditText>(R.id.edtBio)
         val edtPass = findViewById<EditText>(R.id.edtPass)
         val edtConfirm = findViewById<EditText>(R.id.edtConfirm)
         val btnCreerCompte = findViewById<Button>(R.id.btnCreerCompte)
         val tvSeConnecter = findViewById<TextView>(R.id.tvSeConnecter)
-
-        val roles = arrayOf("Client", "Coach")
-        val adapterRole = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            roles
-        )
-        adapterRole.setDropDownViewResource(
-            android.R.layout.simple_spinner_dropdown_item
-        )
-        spinnerRole.adapter = adapterRole
-
-        val specialites = arrayOf(
-            "Choisir...",
-            "Gestion du stress",
-            "Confiance en soi",
-            "Carrière",
-            "Relations",
-            "Bien-être",
-            "Autre"
-        )
-
-        val adapterSpecialite = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            specialites
-        )
-        adapterSpecialite.setDropDownViewResource(
-            android.R.layout.simple_spinner_dropdown_item
-        )
-        spinnerSpecialite.adapter = adapterSpecialite
-
-        spinnerRole.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    layoutCoach.visibility =
-                        if (position == 1) View.VISIBLE else View.GONE
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
 
         btnRetour.setOnClickListener {
             finish()
@@ -93,24 +39,6 @@ class SignupActivity : AppCompatActivity() {
             val email = edtEmail.text.toString().trim()
             val telephone = edtTelephone.text.toString().trim()
             val dateNaissance = edtNaissance.text.toString().trim()
-
-            val role = if (spinnerRole.selectedItemPosition == 1) {
-                "coach"
-            } else {
-                "client"
-            }
-
-            val specialite = if (role == "coach") {
-                spinnerSpecialite.selectedItem.toString()
-            } else {
-                ""
-            }
-
-            val experience =
-                edtExperience.text.toString().toIntOrNull() ?: 0
-
-            val diplome = edtDiplome.text.toString().trim()
-            val bio = edtBio.text.toString().trim()
             val password = edtPass.text.toString()
             val confirm = edtConfirm.text.toString()
 
@@ -169,54 +97,19 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (role == "coach" &&
-                spinnerSpecialite.selectedItemPosition == 0
-            ) {
-                Toast.makeText(
-                    this,
-                    "Veuillez choisir votre spécialité",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (role == "coach" && diplome.isEmpty()) {
-                Toast.makeText(
-                    this,
-                    "Veuillez indiquer votre diplôme",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            if (experience < 0) {
-                Toast.makeText(
-                    this,
-                    "Expérience invalide",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
             btnCreerCompte.isEnabled = false
             btnCreerCompte.text = "Inscription..."
 
-            // Préparer les données à envoyer
-            val donnees = JSONObject()
+            val donnees = JSONObject().apply {
+                put("nom", nom)
+                put("prenom", prenom)
+                put("email", email)
+                put("telephone", telephone)
+                put("dateNaissance", dateNaissance)
+                put("role", "client")
+                put("password", password)
+            }
 
-            donnees.put("nom", nom)
-            donnees.put("prenom", prenom)
-            donnees.put("email", email)
-            donnees.put("telephone", telephone)
-            donnees.put("dateNaissance", dateNaissance)
-            donnees.put("role", role)
-            donnees.put("specialite", specialite)
-            donnees.put("experience", experience)
-            donnees.put("diplome", diplome)
-            donnees.put("bio", bio)
-            donnees.put("password", password)
-
-            // Envoyer les données au backend
             Thread {
 
                 var message = ""
@@ -288,21 +181,11 @@ class SignupActivity : AppCompatActivity() {
                     ).show()
 
                     if (succes) {
-
-                        if (role == "client") {
-                            val intent = Intent(
-                                this,
-                                ClientActivity::class.java
-                            )
-                            startActivity(intent)
-                        } else {
-                            val intent = Intent(
-                                this,
-                                LoginActivity::class.java
-                            )
-                            startActivity(intent)
-                        }
-
+                        val intent = Intent(
+                            this,
+                            ClientActivity::class.java
+                        )
+                        startActivity(intent)
                         finish()
                     }
                 }

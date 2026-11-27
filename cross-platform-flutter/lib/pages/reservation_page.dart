@@ -12,10 +12,8 @@ class ReservationPage extends StatefulWidget {
 }
 
 class _ReservationPageState extends State<ReservationPage> {
-  // Toutes les s├®ances (plus tard : charg├®es depuis l'API)
   final List<Seance> _seances = buildSeancesDemo();
 
-  // --- ├ëtat de la recherche et des filtres ---
   final TextEditingController _rechercheCtrl = TextEditingController();
   String _recherche = '';
   String? _specialite; // null = toutes les sp├®cialit├®s
@@ -30,13 +28,11 @@ class _ReservationPageState extends State<ReservationPage> {
     super.dispose();
   }
 
-  // Listes pour les filtres (sans doublons, tri├®es)
   List<String> get _specialites =>
       (_seances.map((s) => s.specialite).toSet().toList()..sort());
   List<String> get _coachs =>
       (_seances.map((s) => s.coachNom).toSet().toList()..sort());
 
-  // Le cr├®neau horaire correspond-il au filtre choisi ?
   bool _creneauOk(Seance s) {
     final h = s.dateHeure.hour;
     switch (_creneau) {
@@ -51,7 +47,6 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
-  // S├®ances qui respectent la recherche ET tous les filtres
   List<Seance> get _resultats {
     final q = _recherche.trim().toLowerCase();
     return _seances.where((s) {
@@ -74,7 +69,6 @@ class _ReservationPageState extends State<ReservationPage> {
     });
   }
 
-  // --- R├®servation : confirmation, puis la s├®ance passe en "R├®serv├®e" ---
   Future<void> _reserver(Seance seance) async {
     final confirme = await showDialog<bool>(
       context: context,
@@ -134,11 +128,9 @@ class _ReservationPageState extends State<ReservationPage> {
     final resultats = _resultats;
 
     return Scaffold(
-      // Comme les pages de connexion : juste la fl├¿che retour, sans titre
       appBar: AppBar(),
       body: CustomScrollView(
         slivers: [
-          // En-t├¬te + recherche + filtres (d├®filent avec la page)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.myapplication">
-<uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -15,21 +16,45 @@
         <activity
             android:name=".bg_bouton"
             android:exported="false" />
+
         <activity
             android:name=".SignupActivity"
             android:exported="false" />
+
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
+
         <activity
             android:name=".ClientActivity"
             android:exported="false" />
+
+        <!-- Activités de l'espace Coach -->
+        <activity
+            android:name="com.example.espacecoach.DashboardActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EspaceCoach" />
+
+        <activity
+            android:name="com.example.espacecoach.GererSeancesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EspaceCoach" />
+
+        <activity
+            android:name="com.example.espacecoach.FormulaireSeanceActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EspaceCoach" />
+
+        <activity
+            android:name="com.example.espacecoach.DemandesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.EspaceCoach" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

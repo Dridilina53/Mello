@@ -1,50 +1,51 @@
-package com.example.espacecoach
+﻿package com.example.espacecoach
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.espacecoach.databinding.ActivityDashboardBinding
+import com.example.myapplication.LoginActivity
+import com.example.myapplication.databinding.ActivityDashboardBinding
 
-/** Écran 2 : le Dashboard du coach. */
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDashboardBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Qui est connecté ? Si personne, on retourne à la connexion.
-        val coach = FakeBackend.coachConnecte
-        if (coach == null) {
+        val session = getSharedPreferences("MelloSession", MODE_PRIVATE)
+        val role = session.getString("role", "")
+        val coachNom = session.getString("coachNom", "")
+
+        if (!role.equals("COACH", ignoreCase = true) || coachNom.isNullOrBlank()) {
             allerALaConnexion()
             return
         }
 
-        // Affiche "Bonjour Rahma !" (le prénom = le premier mot du nom)
-        val prenom = coach.nom.substringBefore(" ")
-        binding.tvBonjour.text = "Bonjour $prenom !"
+        val prenom = coachNom.substringBefore(" ")
+        binding.tvBonjour.text = "Bonjour  !"
 
-        // Clic sur la carte "Gérer mes séances"
         binding.cardGererSeances.setOnClickListener {
             startActivity(Intent(this, GererSeancesActivity::class.java))
         }
 
-        // Clic sur la carte "Mes demandes"
         binding.cardDemandes.setOnClickListener {
             startActivity(Intent(this, DemandesActivity::class.java))
         }
 
-        // Clic sur "Se déconnecter"
         binding.btnDeconnexion.setOnClickListener {
-            FakeBackend.deconnecter()
+            session.edit().clear().apply()
             allerALaConnexion()
         }
     }
 
     private fun allerALaConnexion() {
-        startActivity(Intent(this, LoginActivity::class.java))
-        finish() // ferme le Dashboard : le bouton "retour" ne le rouvre pas
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }

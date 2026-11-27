@@ -15,13 +15,11 @@ class MainActivity : AppCompatActivity() {
         val btnConnexion = findViewById<Button>(R.id.btnConnexion)
         val btnCreerCompte = findViewById<Button>(R.id.btnCreerCompte)
 
-        // Bouton connexion
         btnConnexion.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
 
-        // Bouton inscription
         btnCreerCompte.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)

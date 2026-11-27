@@ -69,10 +69,9 @@ public class AuthService {
         );
         user.setRole(role);
         user.setStatus("ACTIVE");
-LocalDate dateNaissance = LocalDate.parse(request.dateNaissance());
-user.setDateNaissance(dateNaissance);
+        LocalDate dateNaissance = LocalDate.parse(request.dateNaissance());
+        user.setDateNaissance(dateNaissance);
 
-user.setTelephone(request.telephone());
        user.setTelephone(request.telephone());
 
         User savedUser = userRepository.save(user);

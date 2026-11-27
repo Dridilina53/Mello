@@ -24,13 +24,13 @@ public class SeanceController {
         this.seanceService = seanceService;
     }
 
-    // Afficher les séances disponibles
-    @GetMapping
-    public List<Seance> getAvailableSeances() {
-        return seanceRepository.findByStatutIgnoreCase("DISPONIBLE");
-    }
+    
+@GetMapping
+public List<java.util.Map<String, Object>> getAvailableSeances() {
+    return seanceService.getSeancesDisponibles();
+}
 
-    // Afficher une séance
+
     @GetMapping("/{id}")
     public ResponseEntity<Seance> getSeanceById(@PathVariable Integer id) {
         return seanceRepository.findById(id)
@@ -38,19 +38,16 @@ public class SeanceController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Afficher les séances d'un coach
     @GetMapping("/coach/{coachId}")
     public List<Seance> getSeancesByCoach(@PathVariable Integer coachId) {
         return seanceRepository.findByCoachId(coachId);
     }
 
-    // Ajouter une disponibilité
     @PostMapping
     public Seance ajouterSeance(@RequestBody SeanceRequest request) {
         return seanceService.ajouterSeance(request);
     }
 
-    // Modifier une disponibilité
     @PutMapping("/{id}")
     public ResponseEntity<Seance> modifierSeance(
             @PathVariable Integer id,
@@ -62,7 +59,6 @@ public class SeanceController {
         );
     }
 
-    // Supprimer une disponibilité
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> supprimerSeance(
             @PathVariable Integer id,

@@ -1,4 +1,4 @@
-package com.example.espacecoach
+﻿package com.example.espacecoach
 
 // Un coach : il a un nom et des identifiants de connexion.
 data class Coach(
@@ -6,3 +6,4 @@ data class Coach(
     val email: String,
     val motDePasse: String
 )
+

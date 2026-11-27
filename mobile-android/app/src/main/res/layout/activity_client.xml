@@ -10,13 +10,29 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="mello"
-            android:textColor="#4A342A"
-            android:textSize="28sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="mello"
+                android:textColor="#4A342A"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnDeconnexion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#7D5A44"
+                android:text="Déconnexion"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -53,80 +69,22 @@
             android:padding="10dp"
             android:textSize="14sp" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvEtatSeances"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:background="#FFFFFF"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Chargement des séances..."
+            android:textColor="#7D5A44"
+            android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/tvNomCoach"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Sarah Martin"
-                android:textColor="#4A342A"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvSpecialite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Gestion du stress"
-                android:textColor="#7D5A44"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:text="Date : 20 Novembre 2026"
-                android:textColor="#4A342A"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/tvHeure"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Heure : 10:00"
-                android:textColor="#4A342A"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/tvDuree"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Durée : 60 min"
-                android:textColor="#4A342A"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/tvPrix"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:text="45 DT"
-                android:textColor="#7D5A44"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnReserver"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:backgroundTint="#7D5A44"
-                android:text="Réserver"
-                android:textColor="#FFFFFF" />
-
-        </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSeancesClient"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
-
 </ScrollView>

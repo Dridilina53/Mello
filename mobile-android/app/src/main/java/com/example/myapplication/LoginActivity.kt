@@ -1,19 +1,15 @@
-
-package com.example.myapplication
+﻿package com.example.myapplication
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.espacecoach.DashboardActivity
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import java.io.OutputStreamWriter
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 class LoginActivity : AppCompatActivity() {
 
@@ -21,143 +17,117 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        val btnRetour = findViewById<TextView>(R.id.btnRetour)
         val edtEmail = findViewById<EditText>(R.id.edtEmail)
         val edtPass = findViewById<EditText>(R.id.edtPass)
-        val btnSeConnecter = findViewById<Button>(R.id.btnSeConnecter)
-        val tvCreerCompte = findViewById<TextView>(R.id.tvCreerCompte)
+        val btnConnexion = findViewById<Button>(R.id.btnSeConnecter)
 
-        btnRetour.setOnClickListener {
-            finish()
-        }
-
-        btnSeConnecter.setOnClickListener {
-
+        btnConnexion.setOnClickListener {
             val email = edtEmail.text.toString().trim()
-            val pass = edtPass.text.toString()
+            val password = edtPass.text.toString()
 
-            if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(
-                    this,
-                    "Remplissez tous les champs",
-                    Toast.LENGTH_SHORT
-                ).show()
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Veuillez remplir tous les champs.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            btnSeConnecter.isEnabled = false
+            btnConnexion.isEnabled = false
+            btnConnexion.text = "Connexion..."
 
             Thread {
-                var connexion: HttpURLConnection? = null
+                var message = ""
+                var succes = false
+                var userId = -1
+                var role = ""
+                var coachNom = ""
 
                 try {
                     val url = URL("http://10.0.2.2:8080/api/auth/login")
-                    connexion = url.openConnection() as HttpURLConnection
+                    val connection = url.openConnection() as HttpURLConnection
 
-                    connexion.requestMethod = "POST"
-                    connexion.setRequestProperty("Content-Type", "application/json")
-                    connexion.connectTimeout = 10000
-                    connexion.readTimeout = 10000
-                    connexion.doOutput = true
+                    connection.requestMethod = "POST"
+                    connection.connectTimeout = 10000
+                    connection.readTimeout = 10000
+                    connection.doOutput = true
+                    connection.setRequestProperty("Content-Type", "application/json")
 
-                    val donnees = JSONObject()
-                    donnees.put("email", email)
-                    donnees.put("password", pass)
-
-                    OutputStreamWriter(connexion.outputStream).use {
-                        it.write(donnees.toString())
+                    val body = JSONObject().apply {
+                        put("email", email)
+                        put("password", password)
                     }
 
-                    val code = connexion.responseCode
+                    connection.outputStream.use {
+                        it.write(body.toString().toByteArray(Charsets.UTF_8))
+                    }
 
-                    val flux = if (code == 200) {
-                        connexion.inputStream
+                    val code = connection.responseCode
+                    val stream = if (code in 200..299) {
+                        connection.inputStream
                     } else {
-                        connexion.errorStream
+                        connection.errorStream
                     }
 
-                    val reponse = flux?.bufferedReader()?.use {
-                        it.readText()
-                    } ?: ""
+                    val response = stream.bufferedReader().use { it.readText() }
+                    connection.disconnect()
 
-                    val resultat = JSONObject(reponse)
-                    val message = resultat.optString(
-                        "message",
-                        "Une erreur est survenue."
-                    )
+                    val data = JSONObject(response)
 
-                    val role = resultat.optString("role")
-                    val userId = resultat.optInt("userId", -1)
+                    if (code in 200..299) {
+                        role = data.optString("role").uppercase()
+                        userId = data.optInt("userId", -1)
+                        coachNom = data.optString("coachNom")
+                        succes = role == "CLIENT" || role == "COACH"
 
-                    runOnUiThread {
-                        btnSeConnecter.isEnabled = true
-
-                        if (code == 200) {
-                            when (role.uppercase()) {
-
-                                "CLIENT" -> {
-                                    Toast.makeText(
-                                        this,
-                                        message,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                    val intent = Intent(
-                                        this,
-                                        ClientActivity::class.java
-                                    )
-                                    intent.putExtra("userId", userId)
-                                    intent.putExtra("email", email)
-                                    startActivity(intent)
-                                }
-
-                                "COACH" -> {
-                                    Toast.makeText(
-                                        this,
-                                        "Connexion réussie ! Espace coach en cours de préparation.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-
-                                else -> {
-                                    Toast.makeText(
-                                        this,
-                                        "Rôle utilisateur non reconnu.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            }
-
-                        } else {
-                            Toast.makeText(
-                                this,
-                                message,
-                                Toast.LENGTH_LONG
-                            ).show()
+                        if (!succes) {
+                            message = "Rôle utilisateur non reconnu."
+                        } else if (userId == -1) {
+                            succes = false
+                            message = "Identifiant utilisateur invalide."
+                        } else if (role == "COACH" && coachNom.isBlank()) {
+                            succes = false
+                            message = "Le nom du Coach est absent de la réponse du serveur."
                         }
+                    } else {
+                        message = data.optString("message", "Identifiants incorrects.")
                     }
 
                 } catch (e: Exception) {
-                    runOnUiThread {
-                        btnSeConnecter.isEnabled = true
-
-                        Toast.makeText(
-                            this,
-                            "Erreur de connexion au serveur : ${e.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
-                } finally {
-                    connexion?.disconnect()
+                    message = "Erreur de connexion au serveur."
                 }
 
-            }.start()
-        }
+                runOnUiThread {
+                    btnConnexion.isEnabled = true
+                    btnConnexion.text = "Se connecter"
 
-        tvCreerCompte.setOnClickListener {
-            val intent = Intent(this, SignupActivity::class.java)
-            startActivity(intent)
+                    if (succes) {
+                        // Enregistrer la session commune
+                        getSharedPreferences("MelloSession", MODE_PRIVATE)
+                            .edit()
+                            .putInt("userId", userId)
+                            .putString("email", email)
+                            .putString("role", role)
+                            .putString("coachNom", coachNom)
+                            .apply()
+
+                        if (role == "CLIENT") {
+                            // Conserver les préférences déjà utilisées par l'espace Client
+                            getSharedPreferences("MelloClient", MODE_PRIVATE)
+                                .edit()
+                                .putInt("userId", userId)
+                                .putString("email", email)
+                                .apply()
+
+                            startActivity(Intent(this, ClientActivity::class.java))
+                        } else {
+                            // Ouvrir l'espace Coach
+                            startActivity(Intent(this, DashboardActivity::class.java))
+                        }
+
+                        finish()
+                    } else {
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.start()
         }
     }
 }

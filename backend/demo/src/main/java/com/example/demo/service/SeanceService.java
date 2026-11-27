@@ -6,6 +6,7 @@ import com.example.demo.entity.User;
 import com.example.demo.repository.SeanceRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.ReservationRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.springframework.stereotype.Service;
 
@@ -17,46 +18,95 @@ public class SeanceService {
     private final SeanceRepository seanceRepository;
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public SeanceService(SeanceRepository seanceRepository,
                          UserRepository userRepository,
-                         ReservationRepository reservationRepository) {
+                         ReservationRepository reservationRepository,
+                         JdbcTemplate jdbcTemplate) {
         this.seanceRepository = seanceRepository;
         this.userRepository = userRepository;
         this.reservationRepository = reservationRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Ajouter une disponibilité
     public Seance ajouterSeance(SeanceRequest request) {
 
-        User coach = userRepository.findById(request.getCoachId())
-                .orElseThrow(() -> new RuntimeException("Coach introuvable"));
+    Integer coachId = request.getCoachId();
 
-        if (!coach.getRole().equalsIgnoreCase("COACH")) {
-            throw new RuntimeException("Ce compte n'est pas un coach");
-        }
+    User coach = userRepository.findById(coachId)
+            .orElseThrow(() -> new RuntimeException("Coach introuvable"));
 
-        Seance seance = new Seance();
-
-        seance.setCoachId(request.getCoachId());
-        seance.setIdSpecialite(request.getIdSpecialite());
-        seance.setTitre(request.getTitre());
-        seance.setDescription(request.getDescription());
-        seance.setDateSeance(request.getDateSeance());
-        seance.setHeureDebut(request.getHeureDebut());
-
-        LocalTime heureFin = request.getHeureDebut()
-                .plusMinutes(request.getDureeMinutes());
-
-        seance.setHeureFin(heureFin);
-        seance.setPrix(request.getPrix());
-        seance.setCapacite(1);
-        seance.setStatut("DISPONIBLE");
-
-        return seanceRepository.save(seance);
+    if (!coach.getRole().equalsIgnoreCase("COACH")) {
+        throw new RuntimeException("Ce compte n'est pas un coach");
     }
 
-    // Vérifier que la séance appartient au coach
+    String specialite = jdbcTemplate.query(
+        "SELECT specialite FROM coach WHERE id = ?",
+        rs -> rs.next() ? rs.getString("specialite") : null,
+        coachId
+    );
+
+    if (specialite == null || specialite.trim().isEmpty()) {
+        throw new RuntimeException("Aucune spécialité définie pour ce coach.");
+    }
+
+    Integer idSpecialite = jdbcTemplate.query(
+        "SELECT id_specialite FROM specialites WHERE LOWER(TRIM(nom_specialite)) = LOWER(TRIM(?))",
+        rs -> rs.next() ? rs.getInt("id_specialite") : null,
+        specialite
+    );
+
+    if (idSpecialite == null) {
+        throw new RuntimeException(
+            "Spécialité introuvable dans la table specialites : " + specialite
+        );
+    }
+
+    Seance seance = new Seance();
+
+    seance.setCoachId(coachId);
+    seance.setIdSpecialite(idSpecialite);
+    seance.setTitre(request.getTitre());
+    seance.setDescription(request.getDescription());
+    seance.setDateSeance(request.getDateSeance());
+    seance.setHeureDebut(request.getHeureDebut());
+
+    LocalTime heureFin = request.getHeureDebut()
+            .plusMinutes(request.getDureeMinutes());
+
+    seance.setHeureFin(heureFin);
+    seance.setPrix(request.getPrix());
+    seance.setCapacite(1);
+    seance.setStatut("DISPONIBLE");
+
+    return seanceRepository.save(seance);
+}
+    
+public java.util.List<java.util.Map<String, Object>> getSeancesDisponibles() {
+
+    String sql =
+        "SELECT " +
+        "s.id_seance AS idSeance, " +
+        "s.coach_id AS coachId, " +
+        "CONCAT(u.prenom, ' ', u.nom) AS coachNom, " +
+        "sp.nom_specialite AS specialite, " +
+        "s.titre AS titre, " +
+        "s.description AS description, " +
+        "s.date_seance AS dateSeance, " +
+        "s.heure_debut AS heureDebut, " +
+        "s.heure_fin AS heureFin, " +
+        "TIMESTAMPDIFF(MINUTE, s.heure_debut, s.heure_fin) AS dureeMinutes, " +
+        "s.prix AS prix " +
+        "FROM seances s " +
+        "JOIN users u ON u.id = s.coach_id " +
+        "JOIN specialites sp ON sp.id_specialite = s.id_specialite " +
+        "WHERE UPPER(TRIM(s.statut)) = 'DISPONIBLE' " +
+        "ORDER BY s.date_seance, s.heure_debut";
+
+    return jdbcTemplate.queryForList(sql);
+}
+
     private Seance verifierProprietaire(Integer idSeance, Integer coachId) {
 
         Seance seance = seanceRepository.findById(idSeance)

@@ -20,7 +20,6 @@ public class Reservation {
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
 
-    // Optional for now: we are not connecting the seances table yet.
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "seance_id", nullable = true)
     private Seance seance;
@@ -34,7 +33,6 @@ public class Reservation {
     @Column(nullable = false, length = 20)
     private String statut;
 
-    // Session information saved directly in the reservation
     @Column(name = "titre_seance", nullable = false, length = 150)
     private String titreSeance;
 

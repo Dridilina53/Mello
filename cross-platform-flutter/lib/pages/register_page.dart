@@ -266,7 +266,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 18),
 
-                // Mot de passe
                 MelloTextField(
                   label: 'Mot de passe',
                   hint: '8 caractères minimum',
@@ -290,7 +289,6 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 const SizedBox(height: 18),
 
-                // Confirmation du mot de passe
                 MelloTextField(
                   label: 'Confirmer le mot de passe',
                   hint: 'Répétez votre mot de passe',
